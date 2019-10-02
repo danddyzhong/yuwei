@@ -1,0 +1,72 @@
+由于我们的日志索引使用的是带有日期后缀的  所以可以是用官方推荐的 curator
+1.安装：
+	cd /etc/yum.repos.d/
+	vi curator.repo
+[curator-5]
+name=CentOS/RHEL 7 repository for Elasticsearch Curator 5.x packages
+baseurl=https://packages.elastic.co/curator/5/centos/7
+gpgcheck=1
+gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+	
+	yum install elasticsearch-curator
+2. 配置：
+	创建curator 配置文件，由于elk的配置都是放在/etc/  目录下的 ，所以为了方便统一管理，我们也在这个目录创建 elasticsearch-curator 的配置文件 如下：
+	1）：
+	vi /etc/curator/curator.yml
+client:
+  hosts:
+    - 127.0.0.1
+  port: 9200
+  url_prefix:
+  use_ssl: False
+  certificate:
+  client_cert:
+  client_key:
+  ssl_no_validate: False
+  http_auth:
+  timeout:
+  master_only: True
+ 
+logging:
+  loglevel: INFO
+  logfile:
+  logformat: default
+  blacklist: ['elasticsearch', 'urllib3']
+
+  2）vi /etc/curator/action.yml
+actions:
+  1:
+    action: delete_indices    # 这里执行操作类型为删除索引
+    description: "delete index expire date"
+    options:
+      ignore_empty_list: True
+      timeout_override:
+      continue_if_exception: False
+      disable_action: False
+    filters:
+    - filtertype: pattern
+      kind: prefix    # 这里是指匹配前缀为 “yaobili-” 的索引，还可以支持正则匹配等，详见官方文档
+      value: logstash-gi-
+    # 这里匹配时间
+    - filtertype: age
+      source: name    # 这里不单可以根据name来匹配，还可以根据字段等，详见官方文档
+      direction: older
+    # 这里定义的是days，还有weeks，months等，总时间为unit * unit_count
+      unit: days
+      unit_count: 7
+      timestring: '%Y.%m.%d'    # 这里是跟在logstash-后面的时间的格式
+3: 启动 elasticsearch-curator
+    curator --config /etc/curator/curator.yml /etc/curator/action.yml
+4：添加crond 自动任务
+	为了方便，把系统的时区设置为中国+8时区
+	cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+	添加自动任务
+	crontab -u root -e
+	10 1 * * * curator --config /etc/curator/curator.yml /etc/curator/action.yml
+	我这里设置的是每天的1点10分运行一次自动任务
+	重启crond
+	systemctl restart crond
+	
+	
+	

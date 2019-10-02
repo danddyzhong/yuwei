@@ -1,0 +1,50 @@
+
+创建docker集群 start-------
+先决条件：
+开启防火墙2377端口
+firewall-cmd --zone=public --add-port=2377/tcp --permanent
+firewall-cmd --reload
+
+
+master  worker-1 worker-2
+1.建立 master
+初始化docker集群设置
+docker swarm init --advertise-addr=<IP-ADDRESS-OF-MANAGER>
+例如我的：
+192.168.93.214 master token:
+To add a worker to this swarm, run the following command:
+
+    docker swarm join --token SWMTKN-1-6cc10wzzn6qabu175bhej6z03ozxpo7m6doogsiqi00ohu004m-1vws476gplpts8xvrv9kpih4a 192.168.93.214:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+
+2. worker-1加入集群
+docker swarm join --token <TOKEN> \
+--advertise-addr <IP-ADDRESS-OF-WORKER-1> \
+<IP-ADDRESS-OF-MANAGER>:2377
+例如：docker swarm join --token  SWMTKN-1-6cc10wzzn6qabu175bhej6z03ozxpo7m6doogsiqi00ohu004m-1vws476gplpts8xvrv9kpih4a   --advertise-addr  192.168.93.213   192.168.93.214:2377
+3.worker-2加入集群
+docker swarm join --token <TOKEN> \
+--advertise-addr <IP-ADDRESS-OF-WORKER-2> \
+<IP-ADDRESS-OF-MANAGER>:2377
+例如：docker swarm join --token  SWMTKN-1-6cc10wzzn6qabu175bhej6z03ozxpo7m6doogsiqi00ohu004m-1vws476gplpts8xvrv9kpih4a   --advertise-addr  192.168.93.212   192.168.93.214:2377
+
+4:在master 上可以检测到集群的所有节点
+[root@vm-4 ~]# docker node list
+
+5. 在master worker-1 worker-2 运行  docker network ls 可以看到一个覆盖网络 ingress  和一个桥接网络 docker_gwbridge
+
+创建docker集群  end----------
+
+
+将覆盖网络用于独立容器 ： start------------------------------
+
+1.先决条件：
+
+TCP端口2377
+TCP和UDP端口7946
+UDP端口4789
+
+
+
+

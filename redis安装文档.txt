@@ -1,0 +1,32 @@
+1.安装gcc支持软件
+   yum install gcc-c++
+
+2.解压reids软件包
+  tar -zxvf redis-3.2.x.tar.gz
+
+
+3.使用 make  编译
+
+
+4.使用 make install 安装 （此命令需要root权限来运行）
+
+
+5.修改 reids.conf 配置
+
+    修改 daemonize no  修改成yes ，让服务在后台启动
+
+
+6.运行redis服务端
+   
+   /usr/local/bin/redis-server redis.conf
+
+
+7.启动redis客户端
+  
+  /usr/local/bin/redis-cli -h 192.168.1.19 -p 6379
+
+8.关闭redis
+
+   /usr/local/bin/redis-cli -h 192.168.1.19 -p 6379 SHUT-DOWN
+
+

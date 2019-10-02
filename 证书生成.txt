@@ -1,0 +1,14 @@
+1.安装letsencrypt：	git clone https://github.com/letsencrypt/letsencrypt
+2.安装后在此目录中每三个月之内执行一遍：	./certbot-auto certonly --manual -d *.guangxizehourenli.com --agree-tos --no-bootstrap --manual-public-ip-logging-ok --preferred-challenges dns-01 --server https://acme-v02.api.letsencrypt.org/directory
+	注：guangxizehourenli.com此域名在A那里，如此域名不需要证书，则在上面指令中去掉即可
+3.会生成新证书，此证书便是更新有效期之后的证书：	/etc/letsencrypt/archive/zgjjjx.com/fullchain1.pem(证书) 和 privkey1.pem(密钥)
+4.如果letsencrypt服务器固定，则以后可通过 ：	./certbot-auto renew --force-renew 更新有效期，并在目录中会生成证书和密钥，尾数最大的为最新证书
+
+
+查看证书过期时间：
+ cd /home/letsencrypt/
+ ./certbot-auto certificates
+
+华为云的证书密钥需要装rsa格式：
+
+openssl rsa -in privkey1.pem -out rsa-privkey.pem

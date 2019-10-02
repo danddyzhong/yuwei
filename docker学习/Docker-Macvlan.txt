@@ -1,0 +1,50 @@
+macvlan 的最大优点是性能极好，相比其他实现，macvlan 不需要创建 Linux bridge，而是直接通过以太 interface 连接到物理网络
+
+先决条件：
+    使用 host1 和 host2 上单独的网卡 ens33 创建 macvlan。为保证多个 MAC 地址的网络包都可以从 ens33 通过，我们需要打开网卡的混杂模式。
+   ip link set ens33 promisc on
+   确保 ens33 状态 UP 并且 promisc 模式已经生效。
+
+1.创建 macvlan网络：
+	在 host1 和 host2 中创建 macvlan 网络 mac_net1：
+
+	docker network create -d macvlan  --subnet=172.16.86.0/24  --gateway=172.16.86.1  -o parent=ens33 mac_net1
+
+	注意：在 host2 中也要执行相同的命令。
+	① -d macvlan 指定 driver 为 macvlan。
+	② macvlan 网络是 local 网络，为了保证跨主机能够通信，用户需要自己管理 IP subnet。
+	③ 与其他网络不同，docker 不会为 macvlan 创建网关，这里的网关应该是真实存在的，否则容器无法路由。
+	④ -o parent 指定使用的网络 interface。centos7 网卡名为 ens33
+2.在 host1 中运行容器 alpine1 并连接到 mac_net1:
+	
+	docker run -itd --name alpine1 --ip=172.16.86.10 --network mac_net1 alpine
+	由于 host1 中的 mac_net1 与 host2 中的 mac_net1 本质上是独立的，为了避免自动分配造成 IP 冲突，我们最好通过 --ip 指定 alpine1 地址为 172.16.86.10。
+
+3.在 host2 中运行容器 alpine2，指定 IP 172.16.86.11
+
+	docker run -itd --name alpine2 --ip=172.16.86.11 --network mac_net1 alpine
+	alpine2 能够 ping 到 alpine1 的 IP 172.16.86.10，但无法解析 “alpine1” 主机名。
+
+
+ip link add link ens33 name ens33.99 type vlan id 99
+docker network create -d macvlan --subnet=172.99.0.0/24 --gateway=172.99.0.1 -o parent=ens33.99 macvlan_net99
+docker run -itd --name alpine3 --ip=172.99.0.10 --network macvlan_net99 alpine
+
+4.   用 sub-interface 实现多 macvlan 网络:
+	macvlan 会独占主机的网卡，也就是说一个网卡只能创建一个 macvlan 网络。
+	但主机的网卡数量是有限的，如何支持更多的 macvlan 网络呢？
+	好在 macvlan 不仅可以连接到 interface（如 ens33），
+	也可以连接到 sub-interface（如ens33.xxx）
+	
+	一：创建 macvlan 网络：
+	docker network create -d macvlan --subnet=172.16.10.0/24 --gateway=172.16.10.1 -o parent=ens33.10 mac_net10
+	docker network create -d macvlan --subnet=172.16.20.0/24 --gateway=172.16.20.1 -o parent=ens33.20 mac_net20
+	
+	二：在 host1 中运行容器：
+	docker run -itd --name alpine3 --ip=172.16.10.10 --network mac_net10 alpine
+	docker run -itd --name alpine4 --ip=172.16.20.10 --network mac_net20 alpine
+
+	在 host2 中运行容器：
+	docker run -itd --name alpine5 --ip=172.16.10.11 --network mac_net10 alpine
+	docker run -itd --name alpine6 --ip=172.16.20.11 --network mac_net20 alpine
+

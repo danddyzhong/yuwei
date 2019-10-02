@@ -1,0 +1,56 @@
+https://blog.csdn.net/hanglinux/article/details/48244319
+当我们看到（file not found.）时，可以修改文件的安全策略解决
+一、SELinux简介
+SELinux(Secure Enhanced Linux)安全增强的Linux是由美国国家安全局NSA针对计算机基础结构安全开发的一个全新的Linux安全策略机制。SELinux可以允许系统管理员更加灵活的来定义安全策略。
+
+SELinux是一个内核级别的安全机制，从Linux2.6内核之后就将SELinux集成在了内核当中，因为SELinux是内核级别的，所以我们对于其配置文件的修改都是需要重新启动操作系统才能生效的
+现在主流发现的Linux版本里面都集成了SELinux机制，CentOS/RHEL都会默认开启SELinux机制
+
+二、SELinux基本概念
+操作系统的安全机制其实就是对两样东西做出限制：进程和系统资源(文件、网络套接字、系统调用等)
+在之前学过的知识当中，Linux操作系统是通过用户和组的概念来对我们的系统资源进行限制，我们知道每个进程都需要一个用户才能执行
+在SELinux当中针对这两样东西定义了两个基本概念：域(domin)和上下文(context)。
+域就是用来对进程进行限制，而上下文就是对系统资源进行限制。
+
+我们可以通过 ps -Z 这命令来查看当前进程的域的信息，也就是进程的SELinux信息：
+
+通过 ls -Z 命令我们可以查看文件上下文信息，也就是文件的SELinux信息：
+
+三.我们的CentOS的SELinux配置文件是存放在 /etc/sysconfig/ 目录下的 selinux 文件
+
+四、SELinux模式
+
+SELinux的工作模式一共有三种 enforcing、permissive和disabled 
+
+①enforcing　　强制模式：只要是违反策略的行动都会被禁止，并作为内核信息记录
+
+②permissive　　允许模式：违反策略的行动不会被禁止，但是会提示警告信息
+
+③disabled　　禁用模式：禁用SELinux，与不带SELinux系统是一样的，通常情况下我们在不怎么了解SELinux时，将模式设置成disabled，这样在访问一些网络应用时就不会出问题了。
+我们如果要查看当前SELinux的工作状态，可以使用 getenforce 命令来查看,
+我们如果要设置当前的SELinux工作状态，可以使用 setenforce [0|1] 命令来修改，setenforce 0表示设置成 permissive，1表示enforcing
+【注意：】通过 setenforce 来设置SELinux只是临时修改，当系统重启后就会失效了，所以如果要永久修改，就通过修改SELinux主配置文件
+
+我们可以通过 ls -Z 这个命令来查看我们文件的上下文信息，也就是SELinux信息，我们发现其比传统的 ls 命令多出来了 system_u:object_r:admin_home_t:s0 这个东西，我们现在就来分析一下这段语句所代表的含义
+①system_u　　指的是SElinux用户，root表示root账户身份，user_u表示普通用户无特权用户，system_u表示系统进程，通过用户可以确认身份类型，一般搭配角色使用。身份和不同的角色搭配时有权限不同，虽然可以使用su命令切换用户但对于SElinux的用户并没有发生改变，账户之间切换时此用户身份不变，在targeted策略环境下用户标识没有实质性作用。
+
+②object_r　　object_r一般为文件目录的角色、system_r一般为进程的角色，在targeted策略环境中用户的角色一般为system_r。用户的角色类似用户组的概念，不同的角色具有不同的身份权限，一个用户可以具备多个角色，但是同一时间只能使用一个角色。在targeted策略环境下角色没有实质作用，在targeted策略环境中所有的进程文件的角色都是system_r角色。
+
+③admin_home　　文件和进程都有一个类型，SElinux依据类型的相关组合来限制存取权限。
+
+五、实例
+
+下面我们通过一个实例来看一下上下文 context 的值和SELinux的访问控制
+
+比如说我搭建好了一个Web服务器，我们知道www服务器其默认网页存放位置是在 /var/www/html 这个目录下，我们如果在这里新建一个 index.html 测试页面，启动我们的www服务器，刷新就能见到其内容了，
+这时我们如果是在我们的 /home 目录下建立一个 index.html 页面，然后将其移动到 /var/www/html 这个目录下，再刷新页面，其还会不会正常显示呢？
+
+命令 chcon 可以改变文件的上下文信息，通常我们使用一个参照文件来进行修改：
+chcon --reference=/var/www/html/index.html /var/www/html/test.html
+
+chcon -t httpd_sys_content_t file-name
+chcon -R -t httpd_sys_content_t directory-name
+
+
+
+

@@ -1,0 +1,93 @@
+﻿1.下载mongodb
+   wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.2.7.tgz
+
+2.解压
+  tar -zxvf mongodb-linux-x86_64-rhel62-3.2.7.tgz
+
+3.重命名文件名
+   mv mongodb-linux-x86_64-rhel62-3.2.7 mongodb
+
+4.配置环境变量
+  vi /etc/profile
+  
+  export MONGODB_HOME=/home/mongodb/bin(此处配置的是mongodb的主目录)
+  export PATH=$MONGODB_HOME:$PATH
+
+5.使配置文件生效
+  source /etc/profile
+
+6.查看版本(注：若查看版本成功，则说明mongodb安装成功)
+  mongod -v
+
+注： 以下所有的 mongodb字符 都代表 mongodb数据库的主目录
+7.创建mongodb数据文件和日志文件（可创建在安装目录下面）
+
+  mkdir mongodb/data
+  mkdir mongodb/logs
+  touch mongodb/logs/mongodb.log
+
+8.创建mongodb 的配置文件
+  mkdir mongodb/conf
+  touch mongodb/conf/mongodb.conf
+  vi mongodb/conf/mongodb.conf
+ 8.1 添加配置文件参数
+    dbpath=/home/waguda/mongodb/data
+    logpath=/home/waguda/mongodb/logs/mongodb.log
+    logappend=true
+    port=37017（默认端口是27017）
+    fork=true
+    ##auth = true # 先关闭, 创建好用户在启动
+
+9.通过配置文件启动mongodb
+
+   mongodb/bin/mongod -f mongodb/conf/mongodb.conf
+
+   出现successfully表示启动成功了.
+
+10.创建数据库以及数据库用户
+   cd mongodb/bin
+   ./mongo --port 37017
+
+   use admin
+   switched to db test
+   创建用户
+   db.createUser(
+    {
+        user: "test",
+        pwd: "test",
+        roles: [ { role: "root", db: "admin" } ]
+    }
+   )
+
+  认证用户
+   use admin
+   db.auth('username','pwd')
+
+  删除用户
+   db.system.users.remove({user:"username"});
+  
+
+11.配置防火墙
+
+   vi /etc/sysconfig/iptables
+    -A INPUT -m state --state NEW -m tcp -p tcp --dport 37017 -j ACCEPT
+   /etc/init.d/iptables reload
+
+12.若是centos7请使用以下方法修改防火墙
+   允许防火墙开放端口
+    firewall-cmd --zone=public --add-port=37017/tcp --permanent
+  
+   重新加载防火墙
+     firewall-cmd --reload
+   
+   
+   
+
+    
+
+  
+
+ 
+
+
+   

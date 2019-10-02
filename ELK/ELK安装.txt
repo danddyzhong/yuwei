@@ -1,0 +1,291 @@
+﻿
+1. 安装Elasticsearch 以下简称ES (centos7系统  这里我是用的是yum源安装)
+	准备安装包：
+	1）：导入  Elasticsearch PGP Key
+		rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+		
+	2）：在 /etc/yum.repos.d/ 下面创建一个文件 名为： elasticsearch.repo 的文件
+		写入一下内容：
+[elasticsearch-7.x]
+name=Elasticsearch repository for 7.x packages
+baseurl=https://artifacts.elastic.co/packages/7.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+
+	3）执行以下的命令即可安装elasticsearch
+		sudo yum install elasticsearch
+	
+	4)设置开机启动
+		运行   ps -p 1
+		看下你的系统使用的是 SysV init  还是 systemd
+		1.系统使用的是 SysV init
+		设置开机启动命令为：
+		sudo chkconfig --add elasticsearch	
+		停止或启动命令为：
+		sudo -i service elasticsearch start
+		sudo -i service elasticsearch stop
+		2.系统使用的是 systemd  （centos7 用的是这个）
+		设置开机启动：
+		sudo /bin/systemctl daemon-reload
+		sudo /bin/systemctl enable elasticsearch.service
+		停止或者启动命令为：
+		sudo systemctl start elasticsearch.service
+		sudo systemctl stop elasticsearch.service
+	
+	5）在终端 输入命令 ：curl http://localhost:9200 如果看到一下内容即表示已开启elasticsearch服务
+	
+	{
+	  "name" : "localhost.localdomain",
+	  "cluster_name" : "elasticsearch",
+	  "cluster_uuid" : "E-HOyeGnR7i81wD0oJbj8w",
+	  "version" : {
+		"number" : "7.3.1",
+		"build_flavor" : "default",
+		"build_type" : "rpm",
+		"build_hash" : "4749ba6",
+		"build_date" : "2019-08-19T20:19:25.651794Z",
+		"build_snapshot" : false,
+		"lucene_version" : "8.1.0",
+		"minimum_wire_compatibility_version" : "6.8.0",
+		"minimum_index_compatibility_version" : "6.0.0-beta1"
+	  },
+	  "tagline" : "You Know, for Search"
+	}
+	如果我们想在其他主机浏览器访问ES  还需要进一步配置ES
+	6）配置elasticsearch 	
+	cd /ect/elasticsearch
+	vi elasticsearch.yml
+	
+	修改以下的默认参数：
+	node.name: node-1
+	network.host: 0.0.0.0
+	cluster.initial_master_nodes: ["node-1"]
+	在文件末尾加入两个新参数
+	http.cors.enabled: true
+	http.cors.allow-origin: "*"
+	
+	配置完后重启ES：
+	sudo systemctl restart elasticsearch.service
+	至此ES以配置完
+	-----------------------------------------------------------------------------------------
+2	安装kibana：与安装ES类似
+	准备安装包：
+	
+	1）：导入  Elasticsearch PGP Key (安装Elasticsearch时已经导入，此步可以忽略)
+		rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch  
+		
+	2）：在 /etc/yum.repos.d/ 下面创建一个文件 名为： kibana.repo 的文件
+		写入一下内容：
+[kibana-7.x]
+name=Kibana repository for 7.x packages
+baseurl=https://artifacts.elastic.co/packages/7.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+	3）执行以下的命令即可安装kibana
+	sudo yum install kibana
+	
+	4)设置开机启动
+		运行   ps -p 1
+		看下你的系统使用的是 SysV init  还是 systemd
+		1.系统使用的是 SysV init
+		设置开机启动命令为：
+		sudo chkconfig --add kibana	
+		停止或启动命令为：
+		sudo -i service kibana start
+		sudo -i service kibana stop
+		2.系统使用的是 systemd  （centos7 用的是这个）
+		设置开机启动：
+		sudo /bin/systemctl daemon-reload
+		sudo /bin/systemctl enable kibana.service
+		停止或者启动命令为：
+		sudo systemctl start kibana.service
+		sudo systemctl stop kibana.service
+	5) 配置kibana
+		cd /etc/kibana
+		vi kibana.yml
+		修改默认参数：
+		server.port: 5601
+		server.host: "0.0.0.0"
+		elasticsearch.hosts: ["http://localhost:9200"]
+		kibana.index: ".kibana"
+		如果想汉化可以设置i18n.locale的值为 "zh-CN" 默认是en
+		i18n.locale: "zh-CN"
+		
+		保存后重启kibana：sudo systemctl restart kibana.service
+		
+		然后就可以在浏览器打开 http://hostIP(填写主机的ip):5601
+		
+	至此kibana 安装完成
+4.	安装java 配置java环境:(logstash需要配置Java环境 java版本选择需要根据logsstash版本安装需要的java版本 这里安装的是 Java 11)
+		1）下载安装包：
+		java 官网：https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html 下载地址
+		cd /usr/local/src/
+		将下载好的 jdk-11.0.4_linux-x64_bin.rpm 上传到这里
+		2）安装java   rpm包
+			rpm -ivh   jdk-11.0.4_linux-x64_bin.rpm
+		安装完的java可在/usr/java下找到
+		3） 添加java 环境变量
+		vi  /etc/profile
+		把下面四个添加到文件的末尾
+		export JAVA_HOME=/usr/java/default
+		export JRE_HOME=\$JAVA_HOME/
+		export PATH=$JAVA_HOME/bin:$PATH
+		export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+		保存退出
+		最后 source /etc/profile 重载。
+		4）运行java -version  看到一下信息 即是成功的
+			java version "11.0.4" 2019-07-16 LTS
+			Java(TM) SE Runtime Environment 18.9 (build 11.0.4+10-LTS)
+			Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.4+10-LTS, mixed mode)	
+5.	安装 logstash:
+	
+	准备安装包：
+	1）：导入  Elasticsearch PGP Key (安装Elasticsearch时已经导入，此步可以忽略)
+		rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch  
+		
+	2）：在 /etc/yum.repos.d/ 下面创建一个文件 名为： logstash.repo 的文件
+		写入一下内容：
+[logstash-7.x]
+name=Elastic repository for 7.x packages
+baseurl=https://artifacts.elastic.co/packages/7.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+	3）执行以下的命令即可安装logstash
+	sudo yum install logstash
+	4)配置logstash 启动参数
+	cd /etc/logstash/
+	cp logstash.yml logstash.ymlbak
+	vi logstash.yml
+	修改一下参数：
+	#19:node.name: n7
+	28:path.data: /var/lib/logstash
+	#77:config.reload.automatic: true
+	#81:config.reload.interval: 10s
+	#190:http.host: “10.1.24.71”
+	208:path.logs: /var/log/logstash
+	
+	注：带#可以忽略不设置
+	#19:node.name: xx #节点名称，一般为主机域名
+	28:path.data: /var/lib/logstash #logstash和插件使用的持久化目录
+	#77:config.reload.automatic: true #开启配置文件自动加载
+	#81:config.reload.interval: 10s #配置文件自动加载时间间隔
+	#190:http.host: “x.x.x.x” #定义访问主机名，一般为本机IP或者主机域名
+	208:path.logs: /var/log/logstash #日志目录 注意权限必须为logstash （chown -R logstash /var/log/logstash /var/lib/logstash）
+
+	5)查看配置文件设置哪些参数：
+	grep -n ^[a-Z] /etc/logstash/logstash.yml
+	
+	6)logstash 配置：
+	查看本教程的    （服务器  路径 /etc/logstash/conf.d/forth-pipeline.conf）
+	forth-pipeline.conf 文档
+
+
+
+---------- ELK  安装完毕----------------------------------------------------------
+	
+	
+6. 安装 filebeats
+	准备安装包：
+	1）：导入  Elasticsearch PGP Key (安装Elasticsearch时已经导入，此步可以忽略)
+		rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch  
+		
+	2）：在 /etc/yum.repos.d/ 下面创建一个文件 名为： elastic.repo 的文件
+		写入一下内容：
+[elastic-7.x]
+name=Elastic repository for 7.x packages
+baseurl=https://artifacts.elastic.co/packages/7.x/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+	3）执行以下的命令即可安装filebeat
+	sudo yum install filebeat
+	4)设置开机启动
+		运行   ps -p 1
+		看下你的系统使用的是 SysV init  还是 systemd
+		1.系统使用的是 SysV init
+		设置开机启动命令为：
+		sudo chkconfig --add filebeat	
+		停止或启动命令为：
+		sudo -i service filebeat start
+		sudo -i service filebeat stop
+		2.系统使用的是 systemd  （centos7 用的是这个）
+		设置开机启动：
+		sudo /bin/systemctl daemon-reload
+		sudo /bin/systemctl enable filebeat.service
+		停止或者启动命令为：
+		sudo systemctl start filebeat.service
+		sudo systemctl stop filebeat.service
+
+7.以上完成了  ELK +filebeats 的环境安装
+	
+8.
+	1）配置filebeat 将日志发送到 logstash
+	cd /etc/filebeat/
+	vi filebeat.yml	
+	修改或添加配置参数：
+	filebeat.inputs:
+	- type: log
+		paths:
+		  - /var/log/*.log
+		  - /path/to/file/error.log
+	这里我添加了测试数据 文件 /path/to/file/error.log
+	output.logstash:
+	  hosts: ["localhost:5044"]
+	注意：
+	1.如果logstash跟filebeat 不在同一个主机 只需要将localhost 改为 对应的logstash 访问域名就好
+	2.filebeat 只允许一个单一的数据出口 如果默认了filebeat 输出日志到 ES  需要将其 注释关闭掉
+	
+	
+	2）在logstash 里配置 filebeat 输入格式：
+	运行 whereis logstash
+	可以看到logstash 家目录在  /usr/share/logstash
+	cd /usr/share/logstash
+	创建一个logstash 使用beats输入插件接受beats事件的管道   如：first-pipeline.conf
+	内容架构如下：
+input {
+    beats {
+        port => "5044"
+    }
+}
+#过滤规则这一步是可选项
+# filter {
+#
+# }
+output {
+    stdout { codec => rubydebug }
+}
+查看es 的索引集
+curl http://localhost:9200/_cat/indices?v
+
+
+
+	3）使用Grok插件解析日志：
+	Grok插件是默认可以使用的在logstash 服务中
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
