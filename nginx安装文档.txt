@@ -22,6 +22,7 @@ cd nginx-1.10.1
 	查找安装路径
 	whereis nginx
 九。启动、停止nginx
+	/usr/local/nginx/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
 	cd /usr/local/nginx/sbin/
 	./nginx 
 	./nginx -s stop
