@@ -1,11 +1,11 @@
 https://my.oschina.net/codercpf/blog/1825069
-Centos7²ÉÓÃYum°²×°PHPµÄ·½°¸£º
+Centos7é‡‡ç”¨Yumå®‰è£…PHPçš„æ–¹æ¡ˆï¼š
 
-1¡¢¼ì²éµ±Ç°°²×°µÄPHP
+1ã€æ£€æŸ¥å½“å‰å®‰è£…çš„PHP
 yum list installed | grep php
-Èç¹ûÓĞÒÑ¾­°²×°µÄPHP°ü£¬ÏÈÉ¾³ıËûÃÇ£º
+å¦‚æœæœ‰å·²ç»å®‰è£…çš„PHPåŒ…ï¼Œå…ˆåˆ é™¤ä»–ä»¬ï¼š
 yum remove php.x86_64 php-cli.x86_64 php-common.x86_64 php-gd.x86_64 php-ldap.x86_64 php-mbstring.x86_64 php-mcrypt.x86_64 php-mysql.x86_64 php-pdo.x86_64
-2¡¢Éı¼¶yumÔ´
+2ã€å‡çº§yumæº
     Centos 5.X
 rpm -Uvh http://mirror.webtatic.com/yum/el5/latest.rpm
     CentOs 6.x
@@ -13,34 +13,39 @@ rpm -Uvh http://mirror.webtatic.com/yum/el6/latest.rpm
     CentOs 7.X 
 rpm -Uvh https://mirror.webtatic.com/yum/el7/epel-release.rpm
 rpm -Uvh https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-Èç¹ûÏëÉ¾³ıÉÏÃæ°²×°µÄ°ü£¬ÖØĞÂ°²×°
+å¦‚æœæƒ³åˆ é™¤ä¸Šé¢å®‰è£…çš„åŒ…ï¼Œé‡æ–°å®‰è£…
     rpm -qa | grep webstatic
-    rpm -e  ÉÏÃæËÑË÷µ½µÄ°ü¼´¿É
-£¨ÁĞ³öËùÓĞ±»°²×°µÄrpm package£ºrpm -qa£©
-3¡¢ÔËĞĞ yum install °²×°PHP£º
+    rpm -e  ä¸Šé¢æœç´¢åˆ°çš„åŒ…å³å¯
+ï¼ˆåˆ—å‡ºæ‰€æœ‰è¢«å®‰è£…çš„rpm packageï¼šrpm -qaï¼‰
+3ã€è¿è¡Œ yum install å®‰è£…PHPï¼š
     PHP5.5
 yum install php55w.x86_64 php55w-cli.x86_64 php55w-common.x86_64 php55w-gd.x86_64 php55w-ldap.x86_64 php55w-mbstring.x86_64 php55w-mcrypt.x86_64 php55w-mysql.x86_64 php55w-pdo.x86_64
     PHP5.6
 yum install php56w.x86_64 php56w-cli.x86_64 php56w-common.x86_64 php56w-gd.x86_64 php56w-ldap.x86_64 php56w-mbstring.x86_64 php56w-mcrypt.x86_64 php56w-mysql.x86_64 php56w-pdo.x86_64
     PHP7.0
 yum install php70w.x86_64 php70w-cli.x86_64 php70w-common.x86_64 php70w-gd.x86_64 php70w-ldap.x86_64 php70w-mbstring.x86_64 php70w-mcrypt.x86_64 php70w-mysql.x86_64 php70w-pdo.x86_64
-£¨×¢£ºÈç¹ûÏëÉı¼¶£¬°ÑÉÏÃæµÄ55w»»³É56w¡¢70W¾Í¿ÉÒÔÁË£©    
-4¡¢°²×°PHP FPM£¬·Ö±ğ¶ÔÓ¦ÎªPHP5.5¡¢PHP5.6¡¢PHP7.0
+ï¼ˆæ³¨ï¼šå¦‚æœæƒ³å‡çº§ï¼ŒæŠŠä¸Šé¢çš„55wæ¢æˆ56wã€70Wå°±å¯ä»¥äº†ï¼‰    
+4ã€å®‰è£…PHP FPMï¼Œåˆ†åˆ«å¯¹åº”ä¸ºPHP5.5ã€PHP5.6ã€PHP7.0
     yum install php55w-fpm 
     yum install php56w-fpm 
     yum install php70w-fpm
-£¨×¢£ºÈç¹ûÏëÉı¼¶£¬°ÑÉÏÃæµÄ55w»»³É56w¡¢70W¾Í¿ÉÒÔÁË£©    
-    log Î»ÖÃ£º /var/log/php-fpm
-    pid Î»ÖÃ£º /var/run/php-fpm/php-fpm.pid
-    ĞÅºÅÃüÁî£º    
-INT, TERM Á¢¿ÌÖÕÖ¹
-QUIT Æ½»¬ÖÕÖ¹
-USR1 ÖØĞÂ´ò¿ªÈÕÖ¾ÎÄ¼ş
-USR2 Æ½»¬ÖØÔØËùÓĞworker½ø³Ì²¢ÖØĞÂÔØÈëÅäÖÃºÍ¶ş½øÖÆÄ£¿é
-    Æô¶¯ php-fpm
+ï¼ˆæ³¨ï¼šå¦‚æœæƒ³å‡çº§ï¼ŒæŠŠä¸Šé¢çš„55wæ¢æˆ56wã€70Wå°±å¯ä»¥äº†ï¼‰    
+    log ä½ç½®ï¼š /var/log/php-fpm
+    pid ä½ç½®ï¼š /var/run/php-fpm/php-fpm.pid
+    ä¿¡å·å‘½ä»¤ï¼š    
+INT, TERM ç«‹åˆ»ç»ˆæ­¢
+QUIT å¹³æ»‘ç»ˆæ­¢
+USR1 é‡æ–°æ‰“å¼€æ—¥å¿—æ–‡ä»¶
+USR2 å¹³æ»‘é‡è½½æ‰€æœ‰workerè¿›ç¨‹å¹¶é‡æ–°è½½å…¥é…ç½®å’ŒäºŒè¿›åˆ¶æ¨¡å—
+    å¯åŠ¨ php-fpm
 php-fpm
-    ÖØÆô php-fpm
+    é‡å¯ php-fpm
 
 kill -INT `cat /var/run/php-fpm/php-fpm.pid`
-    php-fpm ÖØÆô£º
+    php-fpm é‡å¯ï¼š
     kill -USR2 `cat /var/run/php-fpm/php-fpm.pid`
+    5ã€è®¾ç½®å¼€æœºå¯åŠ¨
+
+systemctl enable php-fpm.service
+
+systemctl start php-fpm.service
